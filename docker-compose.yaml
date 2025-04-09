@@ -1,0 +1,71 @@
+version: '3.6'
+services:
+  elasticsearch:
+    image: elasticsearch:7.17.28
+    container_name: elasticsearch
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data/
+     #- es-logs:/usr/share/elasticsearch/logs
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    environment:
+      discovery.type: single-node    
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    networks:
+      - elk
+
+  logstash:
+    image: logstash:7.17.28
+    container_name: logstash
+    volumes:
+      - ./logstash/logstash.conf:/usr/share//logstash/pipeline/logstash.conf
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/:/logstash_dir
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5044:5044"
+      - "9600:9600"   
+    networks:
+      - elk
+
+  kibana:
+    image: kibana:7.17.28
+    container_name: kibana
+    ports:
+      - '5601:5601'
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - kb_data:/usr/share/kibana/data
+    depends_on:
+      - elasticsearch  
+    networks:
+      - elk
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.28
+    container_name: filebeat
+    user: root
+    volumes: 
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro # Chemin vers la configuration de Filebeat
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log/syslog:/var/log/syslog:ro
+      - /var/log/auth.log:/var/log/auth.log:ro
+      - es-logs:/usr/share/elasticsearch/logs:ro # Monter le volume pour les logs des containers Docker
+    command:
+      ["filebeat", "-e", "--strict.perms=false"]
+    depends_on:
+      - elasticsearch
+      - kibana
+    networks:
+      - elk
+
+volumes:
+  elastic_data: {}
+  kb_data:
+  es-logs:
+
+networks:
+  elk:

@@ -1,0 +1,28 @@
+{
+    "index_patterns": ["movies"],
+    "mappings": {
+    "properties": {
+      "fields": {
+        "properties": {
+          "title": { "type": "text" },
+          "year": { "type": "integer" },
+          "decade": { "type": "keyword" },
+          "genres": { "type": "keyword" },
+          "directors": { "type": "keyword" },
+          "actors": { "type": "keyword" },
+          "plot": { "type": "text" },
+          "rating": { "type": "float" },
+          "release_date": { "type": "date" },
+          "running_time_secs": { "type": "integer" },
+          "image_url": { "type": "keyword" },
+          "rank": { "type": "integer" }
+        }
+      },
+      "id": { "type": "keyword" },
+      "type": { "type": "keyword" },
+      "@timestamp": { "type": "date" },
+      "path": { "type": "keyword" },
+      "host": { "type": "keyword" }
+    }
+  }
+}

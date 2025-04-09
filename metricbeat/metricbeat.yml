@@ -1,0 +1,31 @@
+# Metricbeat Configuration File
+
+metricbeat.config.modules:
+  # Module Elasticsearch
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+# Output configuration (envoie les métriques vers Elasticsearch ou Logstash)
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+
+# Configuration pour Logstash
+output.logstash:
+  hosts: ["logstash:9600"]
+
+# Configuration des modules que tu souhaites activer
+metricbeat.modules:
+  - module: system
+    period: 10s
+    metricsets: ["cpu", "memory", "network", "diskio", "process"]
+    enabled: true
+    processors:
+      - drop_event.when.regexp:
+          system.process.name: "metricbeat"
+
+  # Si tu veux surveiller Logstash via Metricbeat, tu peux activer ce module
+  - module: logstash
+    metricsets: ["node", "pipeline"]
+    enabled: true
+    period: 10s
+    hosts: ["http://logstash:9600"]  # Logstash expose des métriques sur ce port
